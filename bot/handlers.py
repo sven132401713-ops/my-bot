@@ -1,10 +1,13 @@
 from aiogram import Router, F
 from aiogram.filters import Command
 from aiogram.types import Message, ReplyKeyboardMarkup, KeyboardButton
+from aiogram.fsm.state import StatesGroup, State
+from aiogram.fsm.context import FSMContext
 
 router = Router()
 
 
+# КНОПКИ
 main_keyboard = ReplyKeyboardMarkup(
     keyboard=[
         [KeyboardButton(text="📋 Прайс лист")],
@@ -15,86 +18,94 @@ main_keyboard = ReplyKeyboardMarkup(
 )
 
 
+# FSM СОСТОЯНИЯ
+class OrderState(StatesGroup):
+    product = State()
+    quantity = State()
+    name = State()
+    phone = State()
+    address = State()
+
+
+ADMIN_ID = 5876599297
+
+
+# СТАРТ
 @router.message(Command("start"))
 async def start_handler(message: Message):
     await message.answer(
-        "Привет! Я помогу оформить заказ.\n\n"
-        "Выберите нужный раздел:",
+        "Привет! Выберите действие:",
         reply_markup=main_keyboard
     )
 
 
-@router.message(Command("help"))
-async def help_handler(message: Message):
-    await message.answer(
-        "Доступные разделы:\n"
-        "📋 Прайс лист\n"
-        "🛒 Сделать заказ\n"
-        "🚚 Информация по доставке"
-    )
-
-
-@router.message(Command("info"))
-async def info_handler(message: Message):
-    await message.answer("Я бот для приёма заказов.")
-
-
+# ПРАЙС
 @router.message(F.text == "📋 Прайс лист")
 async def price_handler(message: Message):
-    await message.answer(
-        "📋 Прайс лист:\n\n"
-        "1. Товар 1 — 1000 ₽\n"
-        "2. Товар 2 — 1500 ₽\n"
-        "3. Товар 3 — 2000 ₽\n\n"
-        "Для заказа нажмите «🛒 Сделать заказ»."
-    )
+    await message.answer("Прайс скоро будет в виде фото 📸")
 
 
+# ДОСТАВКА
 @router.message(F.text == "🚚 Информация по доставке")
 async def delivery_handler(message: Message):
-    await message.answer(
-        "🚚 Информация по доставке:\n\n"
-        "Доставка осуществляется по Самаре и Новокуйбышевску.\n"
-        "Дни доставки: вторник и пятница.\n"
-        "Минимальный заказ 1000 рублей. При заказе от 1000 до 2500 рублей доставка 150 рублей, при заказе от 2500 рублей доставка бесплатная."
-    )
+    await message.answer("Доставка 1-3 дня 🚚")
 
 
+# СТАРТ ЗАКАЗА
 @router.message(F.text == "🛒 Сделать заказ")
-async def order_handler(message: Message):
-    await message.answer(
-        "🛒 Чтобы оформить заказ, напишите одним сообщением:\n\n"
-        "1. Что хотите заказать\n"
-        "2. Количество\n"
-        "3. Ваше имя\n"
-        "4. Телефон\n"
-        "5. Адрес доставки\n\n"
-        "Пример:\n"
-        "Товар 1, 2 кг, Иван, +79991234567, Самара, ул. Ленина 1"
+async def order_start(message: Message, state: FSMContext):
+    await message.answer("Что хотите заказать?")
+    await state.set_state(OrderState.product)
+
+
+# ШАГ 1
+@router.message(OrderState.product)
+async def order_product(message: Message, state: FSMContext):
+    await state.update_data(product=message.text)
+    await message.answer("Сколько штук?")
+    await state.set_state(OrderState.quantity)
+
+
+# ШАГ 2
+@router.message(OrderState.quantity)
+async def order_quantity(message: Message, state: FSMContext):
+    await state.update_data(quantity=message.text)
+    await message.answer("Ваше имя?")
+    await state.set_state(OrderState.name)
+
+
+# ШАГ 3
+@router.message(OrderState.name)
+async def order_name(message: Message, state: FSMContext):
+    await state.update_data(name=message.text)
+    await message.answer("Ваш телефон?")
+    await state.set_state(OrderState.phone)
+
+
+# ШАГ 4
+@router.message(OrderState.phone)
+async def order_phone(message: Message, state: FSMContext):
+    await state.update_data(phone=message.text)
+    await message.answer("Адрес доставки?")
+    await state.set_state(OrderState.address)
+
+
+# ШАГ 5 (ФИНАЛ)
+@router.message(OrderState.address)
+async def order_finish(message: Message, state: FSMContext):
+    data = await state.get_data()
+
+    text = (
+        "🆕 Новый заказ:\n\n"
+        f"Товар: {data['product']}\n"
+        f"Количество: {data['quantity']}\n"
+        f"Имя: {data['name']}\n"
+        f"Телефон: {data['phone']}\n"
+        f"Адрес: {message.text}"
     )
-ADMIN_ID = 5876599297
 
+    await message.bot.send_message(ADMIN_ID, text)
 
-@router.message(Command("myid"))
-async def myid_handler(message: Message):
-    await message.answer(f"Ваш Telegram ID: {message.from_user.id}")
+    await message.answer("✅ Заказ принят! Мы свяжемся с вами.")
 
-
-@router.message()
-async def catch_order(message: Message):
-    if message.text in ["📋 Прайс лист", "🛒 Сделать заказ", "🚚 Информация по доставке"]:
-        return
-
-    try:
-        await message.bot.send_message(
-            ADMIN_ID,
-            f"🆕 Новый заказ:\n\n"
-            f"{message.text}\n\n"
-            f"От: @{message.from_user.username} (ID: {message.from_user.id})"
-        )
-        await message.answer("✅ Заказ принят! Мы скоро с вами свяжемся.")
-    except Exception:
-        await message.answer(
-            "⚠️ Заказ получен, но сейчас не удалось отправить его администратору. "
-            "Пожалуйста, попробуйте позже."
-        )
+    await state.clear()
