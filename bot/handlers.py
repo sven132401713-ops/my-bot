@@ -1,25 +1,74 @@
-from aiogram import Router
+from aiogram import Router, F
 from aiogram.filters import Command
-from aiogram.types import Message
+from aiogram.types import Message, ReplyKeyboardMarkup, KeyboardButton
 
 router = Router()
 
 
+main_keyboard = ReplyKeyboardMarkup(
+    keyboard=[
+        [KeyboardButton(text="📋 Прайс лист")],
+        [KeyboardButton(text="🛒 Сделать заказ")],
+        [KeyboardButton(text="🚚 Информация по доставке")],
+    ],
+    resize_keyboard=True
+)
+
+
 @router.message(Command("start"))
 async def start_handler(message: Message):
-    await message.answer("Привет! Я Telegram-бот.")
+    await message.answer(
+        "Привет! Я помогу оформить заказ.\n\n"
+        "Выберите нужный раздел:",
+        reply_markup=main_keyboard
+    )
 
 
 @router.message(Command("help"))
 async def help_handler(message: Message):
     await message.answer(
-        "Доступные команды:\n"
-        "/start — приветствие\n"
-        "/help — помощь\n"
-        "/info — информация о боте"
+        "Доступные разделы:\n"
+        "📋 Прайс лист\n"
+        "🛒 Сделать заказ\n"
+        "🚚 Информация по доставке"
     )
 
 
 @router.message(Command("info"))
 async def info_handler(message: Message):
-    await message.answer("Я минимальный Telegram-бот на Python и aiogram 3.")
+    await message.answer("Я бот для приёма заказов.")
+
+
+@router.message(F.text == "📋 Прайс лист")
+async def price_handler(message: Message):
+    await message.answer(
+        "📋 Прайс лист:\n\n"
+        "1. Товар 1 — 1000 ₽\n"
+        "2. Товар 2 — 1500 ₽\n"
+        "3. Товар 3 — 2000 ₽\n\n"
+        "Для заказа нажмите «🛒 Сделать заказ»."
+    )
+
+
+@router.message(F.text == "🚚 Информация по доставке")
+async def delivery_handler(message: Message):
+    await message.answer(
+        "🚚 Информация по доставке:\n\n"
+        "Доставка осуществляется по городу и регионам.\n"
+        "Срок доставки: 1–3 дня.\n"
+        "Стоимость доставки уточняется после оформления заказа."
+    )
+
+
+@router.message(F.text == "🛒 Сделать заказ")
+async def order_handler(message: Message):
+    await message.answer(
+        "🛒 Чтобы оформить заказ, напишите одним сообщением:\n\n"
+        "1. Что хотите заказать\n"
+        "2. Количество\n"
+        "3. Ваше имя\n"
+        "4. Телефон\n"
+        "5. Адрес доставки\n\n"
+        "Пример:\n"
+        "Товар 1, 2 штуки, Иван, +79991234567, Самара, ул. Ленина 1"
+    )
