@@ -1,6 +1,6 @@
 from aiogram import Router, F
 from aiogram.filters import Command
-from aiogram.types import Message, ReplyKeyboardMarkup, KeyboardButton, FSInputFile
+from aiogram.types import Message, ReplyKeyboardMarkup, KeyboardButton, FSInputFile import os
 from aiogram.fsm.state import StatesGroup, State
 from aiogram.fsm.context import FSMContext
 
@@ -44,7 +44,17 @@ async def start_handler(message: Message):
 async def price_handler(message: Message):
     await message.answer("📋 Отправляю прайс лист:")
 
-    await message.answer_photo(FSInputFile("images/price1.png"))
+   BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+@router.message(F.text == "📋 Прайс лист")
+async def price_handler(message: Message):
+    await message.answer("📋 Отправляю прайс лист:")
+
+    photo_path = os.path.join(BASE_DIR, "..", "images", "price1.png")
+
+    await message.answer_photo(FSInputFile(photo_path))
+
+    await message.answer("Для заказа нажмите «🛒 Сделать заказ».")
 
     await message.answer("Для заказа нажмите «🛒 Сделать заказ».")
 
