@@ -72,7 +72,7 @@ async def order_handler(message: Message):
         "Пример:\n"
         "Товар 1, 2 кг, Иван, +79991234567, Самара, ул. Ленина 1"
     )
-ADMIN_ID = 123456789  # пока оставь как есть
+ADMIN_ID = 5876599297
 
 
 @router.message(Command("myid"))
