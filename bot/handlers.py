@@ -72,3 +72,21 @@ async def order_handler(message: Message):
         "Пример:\n"
         "Товар 1, 2 кг, Иван, +79991234567, Самара, ул. Ленина 1"
     )
+ADMIN_ID = 5876599297
+
+
+@router.message()
+async def catch_order(message: Message):
+    # игнорируем кнопки
+    if message.text in ["📋 Прайс лист", "🛒 Сделать заказ", "🚚 Информация по доставке"]:
+        return
+
+    # отправляем заказ тебе
+    await message.bot.send_message(
+        ADMIN_ID,
+        f"🆕 Новый заказ:\n\n"
+        f"{message.text}\n\n"
+        f"От: @{message.from_user.username} (ID: {message.from_user.id})"
+    )
+
+    await message.answer("✅ Заказ принят! Мы скоро с вами свяжемся.")
