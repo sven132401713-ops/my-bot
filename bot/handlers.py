@@ -48,7 +48,17 @@ async def price_handler(message: Message):
 # ДОСТАВКА
 @router.message(F.text == "🚚 Информация по доставке")
 async def delivery_handler(message: Message):
-    await message.answer("Доставка 1-3 дня 🚚")
+    await message.answer(
+        "🚚 Доставка:\n\n"
+        "Доставка осуществляется до двери по Самаре и Новокуйбышевску.\n\n"
+        "📅 Дни доставки:\n"
+        "— вторник\n"
+        "— пятница\n\n"
+        "💰 Условия:\n"
+        "Минимальный заказ от 1000 рублей.\n\n"
+        "От 1000 до 2500 — доставка 150 рублей.\n"
+        "От 2500 — доставка бесплатная."
+    )
 
 
 # СТАРТ ЗАКАЗА
@@ -62,7 +72,7 @@ async def order_start(message: Message, state: FSMContext):
 @router.message(OrderState.product)
 async def order_product(message: Message, state: FSMContext):
     await state.update_data(product=message.text)
-    await message.answer("Сколько штук?")
+    await message.answer("Какое количество?")
     await state.set_state(OrderState.quantity)
 
 
