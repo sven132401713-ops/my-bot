@@ -47,15 +47,11 @@ async def price_handler(message: Message):
 
     await message.answer("📋 Отправляю прайс лист:")
 
-    photo_path = os.path.abspath(
-        os.path.join(os.getcwd(), "images", "price1.png")
-    )
+    base_dir = os.path.abspath(os.path.join(os.getcwd(), "images"))
 
-    if not os.path.exists(photo_path):
-        await message.answer(f"⚠️ Фото не найдено: {photo_path}")
-        return
-
-    await message.answer_photo(FSInputFile(photo_path))
+    await message.answer_photo(FSInputFile(os.path.join(base_dir, "price1.png")))
+    await message.answer_photo(FSInputFile(os.path.join(base_dir, "price2.png")))
+    await message.answer_photo(FSInputFile(os.path.join(base_dir, "price3.png")))
 
     await message.answer("Для заказа нажмите «🛒 Сделать заказ».")
 
