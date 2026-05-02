@@ -42,19 +42,19 @@ async def start_handler(message: Message):
 # ПРАЙС
 @router.message(F.text == "📋 Прайс лист")
 async def price_handler(message: Message):
+    import os
+
     await message.answer("📋 Отправляю прайс лист:")
 
-   BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+    photo_path = os.path.abspath(
+        os.path.join(os.getcwd(), "images", "price1.png")
+    )
 
-@router.message(F.text == "📋 Прайс лист")
-async def price_handler(message: Message):
-    await message.answer("📋 Отправляю прайс лист:")
-
-    photo_path = os.path.join(BASE_DIR, "..", "images", "price1.png")
+    if not os.path.exists(photo_path):
+        await message.answer(f"⚠️ Фото не найдено: {photo_path}")
+        return
 
     await message.answer_photo(FSInputFile(photo_path))
-
-    await message.answer("Для заказа нажмите «🛒 Сделать заказ».")
 
     await message.answer("Для заказа нажмите «🛒 Сделать заказ».")
 
