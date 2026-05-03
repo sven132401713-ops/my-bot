@@ -115,14 +115,20 @@ async def order_phone(message: Message, state: FSMContext):
 async def order_finish(message: Message, state: FSMContext):
     data = await state.get_data()
 
-    text = (
-        "🆕 Новый заказ:\n\n"
-        f"Товар: {data['product']}\n"
-        f"Количество: {data['quantity']}\n"
-        f"Имя: {data['name']}\n"
-        f"Телефон: {data['phone']}\n"
-        f"Адрес: {message.text}"
-    )
+   username = message.from_user.username
+username_text = f"@{username}" if username else "username не указан"
+
+text = (
+    "🆕 Новый заказ:\n\n"
+    f"Товар: {data['product']}\n"
+    f"Количество: {data['quantity']}\n"
+    f"Имя: {data['name']}\n"
+    f"Телефон: {data['phone']}\n"
+    f"Адрес: {message.text}\n\n"
+    f"Telegram клиента: {username_text}\n"
+    f"Telegram ID: {message.from_user.id}\n"
+    f"Имя в Telegram: {message.from_user.full_name}"
+)
 
     await message.bot.send_message(ADMIN_ID, text)
 
