@@ -98,17 +98,19 @@ async def order_quantity(message: Message, state: FSMContext):
 @router.message(OrderState.name)
 async def order_name(message: Message, state: FSMContext):
     await state.update_data(name=message.text)
-    phone_keyboard = ReplyKeyboardMarkup(
-    keyboard=[
-        [KeyboardButton(text="📞 Отправить номер", request_contact=True)]
-    ],
-    resize_keyboard=True
-)
 
-await message.answer(
-    "Отправьте ваш номер телефона:",
-    reply_markup=phone_keyboard
-)
+    phone_keyboard = ReplyKeyboardMarkup(
+        keyboard=[
+            [KeyboardButton(text="📞 Отправить номер", request_contact=True)]
+        ],
+        resize_keyboard=True
+    )
+
+    await message.answer(
+        "Отправьте ваш номер телефона:",
+        reply_markup=phone_keyboard
+    )
+
     await state.set_state(OrderState.phone)
 
 
