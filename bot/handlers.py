@@ -161,8 +161,10 @@ async def order_address(message: Message, state: FSMContext):
 
     await message.answer(text, reply_markup=confirm_keyboard)
     await state.set_state(OrderState.confirm)
-    @router.message(OrderState.confirm, F.text == "✅ Подтвердить заказ")
-async def confirm_order(message: Message, state: FSMContext):
+   @router.message(OrderState.confirm)
+async def confirm_order(message: Message, state: FSMContext):    if message.text != "✅ Подтвердить заказ":
+        await message.answer("Нажмите кнопку «✅ Подтвердить заказ» или «❌ Отменить заказ».")
+        return
     data = await state.get_data()
 
     username = message.from_user.username
