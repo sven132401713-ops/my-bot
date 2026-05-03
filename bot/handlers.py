@@ -17,7 +17,12 @@ main_keyboard = ReplyKeyboardMarkup(
     ],
     resize_keyboard=True
 )
-
+cancel_keyboard = ReplyKeyboardMarkup(
+    keyboard=[
+        [KeyboardButton(text="❌ Отменить заказ")]
+    ],
+    resize_keyboard=True
+)
 
 # FSM СОСТОЯНИЯ
 class OrderState(StatesGroup):
@@ -29,7 +34,13 @@ class OrderState(StatesGroup):
 
 
 ADMIN_ID = 5876599297
-
+@router.message(F.text == "❌ Отменить заказ")
+async def cancel_order(message: Message, state: FSMContext):
+    await state.clear()
+    await message.answer(
+        "❌ Заказ отменён.",
+        reply_markup=main_keyboard
+    )
 
 # СТАРТ
 @router.message(Command("start"))
@@ -74,7 +85,7 @@ async def delivery_handler(message: Message):
 # СТАРТ ЗАКАЗА
 @router.message(F.text == "🛒 Сделать заказ")
 async def order_start(message: Message, state: FSMContext):
-    await message.answer("Что хотите заказать?")
+    await message.answer("Что хотите заказать?", reply_markup=cancel_keyboard)
     await state.set_state(OrderState.product)
 
 
@@ -82,7 +93,7 @@ async def order_start(message: Message, state: FSMContext):
 @router.message(OrderState.product)
 async def order_product(message: Message, state: FSMContext):
     await state.update_data(product=message.text)
-    await message.answer("Какое количество?")
+    await message.answer("Какое количество?", reply_markup=cancel_keyboard)
     await state.set_state(OrderState.quantity)
 
 
@@ -90,7 +101,7 @@ async def order_product(message: Message, state: FSMContext):
 @router.message(OrderState.quantity)
 async def order_quantity(message: Message, state: FSMContext):
     await state.update_data(quantity=message.text)
-    await message.answer("Ваше имя?")
+    await message.answer("Ваше имя?", reply_markup=cancel_keyboard)
     await state.set_state(OrderState.name)
 
 
@@ -103,11 +114,10 @@ async def order_name(message: Message, state: FSMContext):
         keyboard=[
             [KeyboardButton(text="📞 Отправить номер", request_contact=True)]
         ],
-        resize_keyboard=True
     )
 
     await message.answer(
-        "Отправьте ваш номер телефона:",
+        "Отправьте ваш номер телефона:, reply_markup=cancel_keyboard",
         reply_markup=phone_keyboard
     )
 
@@ -123,7 +133,7 @@ async def order_phone(message: Message, state: FSMContext):
         phone = message.text
 
     await state.update_data(phone=phone)
-    await message.answer("Адрес доставки?", reply_markup=main_keyboard)
+    await message.answer("Адрес доставки?, reply_markup=cancel_keyboard", reply_markup=main_keyboard)
     await state.set_state(OrderState.address)
 
 
