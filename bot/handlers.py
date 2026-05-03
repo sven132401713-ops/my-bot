@@ -23,7 +23,13 @@ cancel_keyboard = ReplyKeyboardMarkup(
     ],
     resize_keyboard=True
 )
-
+confirm_keyboard = ReplyKeyboardMarkup(
+    keyboard=[
+        [KeyboardButton(text="✅ Подтвердить заказ")],
+        [KeyboardButton(text="❌ Отменить заказ")]
+    ],
+    resize_keyboard=True
+)
 # FSM СОСТОЯНИЯ
 class OrderState(StatesGroup):
     product = State()
@@ -31,7 +37,7 @@ class OrderState(StatesGroup):
     name = State()
     phone = State()
     address = State()
-
+    confirm = State()
 
 ADMIN_ID = 5876599297
 @router.message(F.text == "❌ Отменить заказ")
@@ -139,7 +145,23 @@ async def order_phone(message: Message, state: FSMContext):
 
 # ШАГ 5 (ФИНАЛ)
 @router.message(OrderState.address)
-async def order_finish(message: Message, state: FSMContext):
+async def order_address(message: Message, state: FSMContext):
+    await state.update_data(address=message.text)
+
+    data = await state.get_data()
+
+    text = (
+        "📦 Проверьте заказ:\n\n"
+        f"Товар: {data['product']}\n"
+        f"Количество: {data['quantity']}\n"
+        f"Имя: {data['name']}\n"
+        f"Телефон: {data['phone']}\n"
+        f"Адрес: {data['address']}"
+    )
+
+    await message.answer(text, reply_markup=confirm_keyboard)
+    await state.set_state(OrderState.confirm)@router.message(OrderState.confirm, F.text == "✅ Подтвердить заказ")
+async def confirm_order(message: Message, state: FSMContext):
     data = await state.get_data()
 
     username = message.from_user.username
@@ -151,7 +173,7 @@ async def order_finish(message: Message, state: FSMContext):
         f"Количество: {data['quantity']}\n"
         f"Имя: {data['name']}\n"
         f"Телефон: {data['phone']}\n"
-        f"Адрес: {message.text}\n\n"
+        f"Адрес: {data['address']}\n\n"
         f"Telegram клиента: {username_text}\n"
         f"Telegram ID: {message.from_user.id}\n"
         f"Имя в Telegram: {message.from_user.full_name}"
