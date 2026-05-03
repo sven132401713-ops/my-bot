@@ -98,15 +98,30 @@ async def order_quantity(message: Message, state: FSMContext):
 @router.message(OrderState.name)
 async def order_name(message: Message, state: FSMContext):
     await state.update_data(name=message.text)
-    await message.answer("Ваш телефон?")
+    phone_keyboard = ReplyKeyboardMarkup(
+    keyboard=[
+        [KeyboardButton(text="📞 Отправить номер", request_contact=True)]
+    ],
+    resize_keyboard=True
+)
+
+await message.answer(
+    "Отправьте ваш номер телефона:",
+    reply_markup=phone_keyboard
+)
     await state.set_state(OrderState.phone)
 
 
 # ШАГ 4
 @router.message(OrderState.phone)
 async def order_phone(message: Message, state: FSMContext):
-    await state.update_data(phone=message.text)
-    await message.answer("Адрес доставки?")
+    if message.contact:
+        phone = message.contact.phone_number
+    else:
+        phone = message.text
+
+    await state.update_data(phone=phone)
+    await message.answer("Адрес доставки?", reply_markup=main_keyboard)
     await state.set_state(OrderState.address)
 
 
