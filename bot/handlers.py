@@ -1,6 +1,6 @@
 from aiogram import Router, F
 from aiogram.filters import Command
-from aiogram.types import Message, ReplyKeyboardMarkup, KeyboardButton, FSInputFile 
+from aiogram.types import Message, ReplyKeyboardMarkup, KeyboardButton, FSInputFile, ReplyKeyboardRemove
 import os
 from aiogram.fsm.state import StatesGroup, State
 from aiogram.fsm.context import FSMContext
@@ -148,10 +148,11 @@ async def order_finish(message: Message, state: FSMContext):
     )
 
     await message.bot.send_message(ADMIN_ID, text)
-    await message.answer(
+   await message.answer(
     "✅ Заказ принят!\n\n"
     "Мы получили вашу заявку.\n"
     "Свяжемся с вами в ближайшее время.\n\n"
-    "Спасибо 🙌"
+    "Спасибо 🙌",
+    reply_markup=main_keyboard
 )
     await state.clear()
