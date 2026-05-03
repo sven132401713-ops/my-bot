@@ -1,14 +1,14 @@
 from aiogram import Router, F
 from aiogram.filters import Command
-from aiogram.types import Message, ReplyKeyboardMarkup, KeyboardButton, FSInputFile, ReplyKeyboardRemove
+from aiogram.types import Message, ReplyKeyboardMarkup, KeyboardButton, FSInputFile
 import os
-from aiogram.fsm.state import StatesGroup, State
-from aiogram.fsm.context import FSMContext
 
 router = Router()
 
 
-# КНОПКИ
+ADMIN_ID = 5876599297
+
+
 main_keyboard = ReplyKeyboardMarkup(
     keyboard=[
         [KeyboardButton(text="📋 Прайс лист")],
@@ -17,51 +17,37 @@ main_keyboard = ReplyKeyboardMarkup(
     ],
     resize_keyboard=True
 )
-cancel_keyboard = ReplyKeyboardMarkup(
-    keyboard=[
-        [KeyboardButton(text="❌ Отменить заказ")]
-    ],
-    resize_keyboard=True
-)
-confirm_keyboard = ReplyKeyboardMarkup(
-    keyboard=[
-        [KeyboardButton(text="✅ Подтвердить заказ")],
-        [KeyboardButton(text="❌ Отменить заказ")]
-    ],
-    resize_keyboard=True
-)
-# FSM СОСТОЯНИЯ
-class OrderState(StatesGroup):
-    product = State()
-    quantity = State()
-    name = State()
-    phone = State()
-    address = State()
-    confirm = State()
 
-ADMIN_ID = 5876599297
-@router.message(F.text == "❌ Отменить заказ")
-async def cancel_order(message: Message, state: FSMContext):
-    await state.clear()
-    await message.answer(
-        "❌ Заказ отменён.",
-        reply_markup=main_keyboard
-    )
 
-# СТАРТ
 @router.message(Command("start"))
 async def start_handler(message: Message):
     await message.answer(
-        "Привет! Выберите действие:",
+        "Здравствуйте! Выберите нужный раздел:",
         reply_markup=main_keyboard
     )
 
 
-# ПРАЙС
+@router.message(Command("help"))
+async def help_handler(message: Message):
+    await message.answer(
+        "Доступные разделы:\n"
+        "📋 Прайс лист\n"
+        "🛒 Сделать заказ\n"
+        "🚚 Информация по доставке",
+        reply_markup=main_keyboard
+    )
+
+
+@router.message(Command("info"))
+async def info_handler(message: Message):
+    await message.answer(
+        "Бот помогает посмотреть прайс, узнать условия доставки и отправить заказ.",
+        reply_markup=main_keyboard
+    )
+
+
 @router.message(F.text == "📋 Прайс лист")
 async def price_handler(message: Message):
-    import os
-
     await message.answer("📋 Отправляю прайс лист:")
 
     base_dir = os.path.abspath(os.path.join(os.getcwd(), "images"))
@@ -70,9 +56,9 @@ async def price_handler(message: Message):
     await message.answer_photo(FSInputFile(os.path.join(base_dir, "price2.png")))
     await message.answer_photo(FSInputFile(os.path.join(base_dir, "price3.png")))
 
-    await message.answer("Для заказа нажмите «🛒 Сделать заказ».")
+    await message.answer("Для заказа нажмите «🛒 Сделать заказ».", reply_markup=main_keyboard)
 
-# ДОСТАВКА
+
 @router.message(F.text == "🚚 Информация по доставке")
 async def delivery_handler(message: Message):
     await message.answer(
@@ -84,101 +70,41 @@ async def delivery_handler(message: Message):
         "💰 Условия:\n"
         "Минимальный заказ от 1000 рублей.\n\n"
         "От 1000 до 2500 — доставка 150 рублей.\n"
-        "От 2500 — доставка бесплатная."
+        "От 2500 — доставка бесплатная.",
+        reply_markup=main_keyboard
     )
 
 
-# СТАРТ ЗАКАЗА
 @router.message(F.text == "🛒 Сделать заказ")
-async def order_start(message: Message, state: FSMContext):
-    await message.answer("Что хотите заказать?", reply_markup=cancel_keyboard)
-    await state.set_state(OrderState.product)
-
-
-# ШАГ 1
-@router.message(OrderState.product)
-async def order_product(message: Message, state: FSMContext):
-    await state.update_data(product=message.text)
-    await message.answer("Какое количество?", reply_markup=cancel_keyboard)
-    await state.set_state(OrderState.quantity)
-
-
-# ШАГ 2
-@router.message(OrderState.quantity)
-async def order_quantity(message: Message, state: FSMContext):
-    await state.update_data(quantity=message.text)
-    await message.answer("Ваше имя?", reply_markup=cancel_keyboard)
-    await state.set_state(OrderState.name)
-
-
-# ШАГ 3
-@router.message(OrderState.name)
-async def order_name(message: Message, state: FSMContext):
-    await state.update_data(name=message.text)
-
-    phone_keyboard = ReplyKeyboardMarkup(
-        keyboard=[
-            [KeyboardButton(text="📞 Отправить номер", request_contact=True)]
-        ],
-    )
-
+async def order_instruction(message: Message):
     await message.answer(
-        "Отправьте ваш номер телефона:",
-        reply_markup=phone_keyboard,
+        "🛒 Напишите заказ одним сообщением.\n\n"
+        "Укажите, пожалуйста:\n"
+        "— что хотите заказать\n"
+        "— количество\n"
+        "— имя\n"
+        "— телефон\n"
+        "— адрес доставки\n\n"
+        "Если потребуется уточнение, менеджер свяжется с вами.",
+        reply_markup=main_keyboard
     )
 
-    await state.set_state(OrderState.phone)
 
-
-# ШАГ 4
-@router.message(OrderState.phone)
-async def order_phone(message: Message, state: FSMContext):
-    if message.contact:
-        phone = message.contact.phone_number
-    else:
-        phone = message.text
-
-    await state.update_data(phone=phone)
-    await message.answer("Адрес доставки?", reply_markup=main_keyboard,)
-    await state.set_state(OrderState.address)
-
-
-# ШАГ 5 (ФИНАЛ)
-@router.message(OrderState.address)
-async def order_address(message: Message, state: FSMContext):
-    await state.update_data(address=message.text)
-
-    data = await state.get_data()
-
-    text = (
-        "📦 Проверьте заказ:\n\n"
-        f"Товар: {data['product']}\n"
-        f"Количество: {data['quantity']}\n"
-        f"Имя: {data['name']}\n"
-        f"Телефон: {data['phone']}\n"
-        f"Адрес: {data['address']}"
-    )
-
-    await message.answer(text, reply_markup=confirm_keyboard)
-    await state.set_state(OrderState.confirm)
-@router.message(OrderState.confirm)
-async def confirm_order(message: Message, state: FSMContext):
-    if message.text != "✅ Подтвердить заказ":
-        await message.answer("Нажмите «✅ Подтвердить заказ» или «❌ Отменить заказ».")
+@router.message()
+async def receive_order(message: Message):
+    if not message.text:
+        await message.answer("Пожалуйста, отправьте заказ текстовым сообщением.")
         return
 
-    data = await state.get_data()
+    if message.text in ["📋 Прайс лист", "🛒 Сделать заказ", "🚚 Информация по доставке"]:
+        return
 
     username = message.from_user.username
     username_text = f"@{username}" if username else "username не указан"
 
     text = (
         "🆕 Новый заказ:\n\n"
-        f"Товар: {data['product']}\n"
-        f"Количество: {data['quantity']}\n"
-        f"Имя: {data['name']}\n"
-        f"Телефон: {data['phone']}\n"
-        f"Адрес: {data['address']}\n\n"
+        f"{message.text}\n\n"
         f"Telegram клиента: {username_text}\n"
         f"Telegram ID: {message.from_user.id}\n"
         f"Имя в Telegram: {message.from_user.full_name}"
@@ -193,5 +119,3 @@ async def confirm_order(message: Message, state: FSMContext):
         "Спасибо 🙌",
         reply_markup=main_keyboard
     )
-
-    await state.clear()
