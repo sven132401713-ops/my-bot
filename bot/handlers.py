@@ -90,7 +90,16 @@ async def order_instruction(message: Message):
     "Если потребуется уточнение, менеджер свяжется с вами.",
     reply_markup=main_keyboard
 )
-
+@router.message(F.text == "☎️ Связаться с менеджером")
+async def contact_manager(message: Message):
+    await message.answer(
+        "📞 Связь с менеджером:\n\n"
+        "Телефон: +79874416997\n"
+        "Telegram: @ferma_163\n\n"
+        "🕒 Время работы:\n"
+        "Ежедневно с 10:00 до 20:00",
+        reply_markup=main_keyboard
+    )
 
 @router.message()
 async def receive_order(message: Message):
@@ -119,15 +128,5 @@ async def receive_order(message: Message):
         "Мы получили вашу заявку.\n"
         "Свяжемся с вами в ближайшее время.\n\n"
         "Спасибо 🙌",
-        reply_markup=main_keyboard
-    )
-@router.message(F.text == "☎️ Связаться с менеджером")
-async def contact_manager(message: Message):
-    await message.answer(
-        "📞 Связь с менеджером:\n\n"
-        "Телефон: +79874416997\n"
-        "Telegram: @ferma_163\n\n"
-        "🕒 Время работы:\n"
-        "Ежедневно с 10:00 до 20:00",
         reply_markup=main_keyboard
     )
