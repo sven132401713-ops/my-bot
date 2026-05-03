@@ -160,7 +160,8 @@ async def order_address(message: Message, state: FSMContext):
     )
 
     await message.answer(text, reply_markup=confirm_keyboard)
-    await state.set_state(OrderState.confirm)@router.message(OrderState.confirm, F.text == "✅ Подтвердить заказ")
+    await state.set_state(OrderState.confirm)
+    @router.message(OrderState.confirm, F.text == "✅ Подтвердить заказ")
 async def confirm_order(message: Message, state: FSMContext):
     data = await state.get_data()
 
