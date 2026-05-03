@@ -131,5 +131,10 @@ async def order_finish(message: Message, state: FSMContext):
     )
 
     await message.bot.send_message(ADMIN_ID, text)
-    await message.answer("✅ Заказ принят! Мы свяжемся с вами.")
+    await message.answer(
+    "✅ Заказ принят!\n\n"
+    "Мы получили вашу заявку.\n"
+    "Свяжемся с вами в ближайшее время.\n\n"
+    "Спасибо 🙌"
+)
     await state.clear()
