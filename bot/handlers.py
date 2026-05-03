@@ -121,7 +121,7 @@ async def receive_order(message: Message):
         "Спасибо 🙌",
         reply_markup=main_keyboard
     )
-    @router.message(F.text == "☎️ Связаться с менеджером")
+@router.message(F.text == "☎️ Связаться с менеджером")
 async def contact_manager(message: Message):
     await message.answer(
         "📞 Связь с менеджером:\n\n"
