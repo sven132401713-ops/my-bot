@@ -103,7 +103,15 @@ async def contact_manager(message: Message):
 
 @router.message()
 async def receive_order(message: Message):
-    if not message.text:
+    if not message.text:text = message.text.lower()
+
+# фильтр коротких и случайных сообщений
+if len(text) < 10 or text in ["привет", "здравствуйте", "ок", "спасибо"]:
+    await message.answer(
+        "Пожалуйста, нажмите «🛒 Сделать заказ» и отправьте заказ одним сообщением.",
+        reply_markup=main_keyboard
+    )
+    return
         await message.answer("Пожалуйста, отправьте заказ текстовым сообщением.")
         return
 
