@@ -1,37 +1,39 @@
 from aiohttp import web
 import os
-import json
+import requests
+
 
 VK_CONFIRMATION = os.getenv("VK_CONFIRMATION")
-ADMIN_ID = int(os.getenv("ADMIN_ID"))
+ADMIN_ID = os.getenv("ADMIN_ID")
+BOT_TOKEN = os.getenv("BOT_TOKEN")
 
 
 async def handle(request):
     data = await request.json()
 
-    if data["type"] == "confirmation":
-        return web.Response(text=VK_CONFIRMATION)
+    event_type = data.get("type")
 
-    if data["type"] == "message_new":
-        message = data["object"]["message"]["text"]
-        user_id = data["object"]["message"]["from_id"]
+    if event_type == "confirmation":
+        return web.Response(text=VK_CONFIRMATION or "")
+
+    if event_type == "message_new":
+        message = data.get("object", {}).get("message", {})
+        text_from_vk = message.get("text", "")
+        user_id = message.get("from_id", "")
 
         text = (
-            "🆕 Новый заказ из VK:\n\n"
-            f"{message}\n\n"
+            "🆕 Новое сообщение из VK:\n\n"
+            f"{text_from_vk}\n\n"
             f"VK user id: {user_id}"
         )
 
-        # отправка в Telegram
-        import requests
-        bot_token = os.getenv("BOT_TOKEN")
-
         requests.post(
-            f"https://api.telegram.org/bot{bot_token}/sendMessage",
+            f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage",
             data={
                 "chat_id": ADMIN_ID,
                 "text": text
-            }
+            },
+            timeout=10
         )
 
         return web.Response(text="ok")
@@ -42,4 +44,5 @@ async def handle(request):
 def setup_vk_app():
     app = web.Application()
     app.router.add_post("/", handle)
+    app.router.add_get("/", lambda request: web.Response(text="VK bot is running"))
     return app
