@@ -1,6 +1,5 @@
-from aiohttp import web
+from aiohttp import web, ClientSession
 import os
-import requests
 
 
 VK_CONFIRMATION = os.getenv("VK_CONFIRMATION")
@@ -27,14 +26,14 @@ async def handle(request):
             f"VK user id: {user_id}"
         )
 
-        requests.post(
-            f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage",
-            data={
-                "chat_id": ADMIN_ID,
-                "text": text
-            },
-            timeout=10
-        )
+        async with ClientSession() as session:
+            await session.post(
+                f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage",
+                data={
+                    "chat_id": ADMIN_ID,
+                    "text": text
+                }
+            )
 
         return web.Response(text="ok")
 
@@ -44,5 +43,4 @@ async def handle(request):
 def setup_vk_app():
     app = web.Application()
     app.router.add_post("/", handle)
-    app.router.add_get("/", lambda request: web.Response(text="VK bot is running"))
     return app
