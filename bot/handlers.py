@@ -131,7 +131,7 @@ async def receive_order(message: Message):
         "Спасибо 🙌",
         reply_markup=main_keyboard
     )
-    @router.message(Command("vkreply"))
+@router.message(Command("vkreply"))
 async def vk_reply_handler(message: Message, command: CommandObject):
     if message.from_user.id != ADMIN_ID:
         await message.answer("⛔ Эта команда доступна только администратору.")
