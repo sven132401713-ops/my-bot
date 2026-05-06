@@ -1,6 +1,7 @@
 from aiogram import Router, F
-from aiogram.filters import Command
+from aiogram.filters import Command, CommandObject
 from aiogram.types import Message, ReplyKeyboardMarkup, KeyboardButton, FSInputFile
+from aiohttp import ClientSession
 import os
 
 router = Router()
@@ -130,3 +131,51 @@ async def receive_order(message: Message):
         "Спасибо 🙌",
         reply_markup=main_keyboard
     )
+    @router.message(Command("vkreply"))
+async def vk_reply_handler(message: Message, command: CommandObject):
+    if message.from_user.id != ADMIN_ID:
+        await message.answer("⛔ Эта команда доступна только администратору.")
+        return
+
+    if not command.args:
+        await message.answer(
+            "Использование:\n"
+            "/vkreply VK_ID текст ответа\n\n"
+            "Пример:\n"
+            "/vkreply 123456789 Здравствуйте, заказ приняли."
+        )
+        return
+
+    parts = command.args.split(maxsplit=1)
+
+    if len(parts) < 2:
+        await message.answer(
+            "Нужно указать VK ID и текст ответа.\n\n"
+            "Пример:\n"
+            "/vkreply 123456789 Здравствуйте, заказ приняли."
+        )
+        return
+
+    vk_user_id = parts[0]
+    reply_text = parts[1]
+
+    vk_token = os.getenv("VK_TOKEN")
+
+    async with ClientSession() as session:
+        async with session.post(
+            "https://api.vk.com/method/messages.send",
+            data={
+                "access_token": vk_token,
+                "user_id": vk_user_id,
+                "message": reply_text,
+                "random_id": 0,
+                "v": "5.199"
+            }
+        ) as response:
+            result = await response.json()
+
+    if "error" in result:
+        await message.answer(f"❌ Ошибка VK:\n{result['error']}")
+        return
+
+    await message.answer("✅ Ответ отправлен в VK.")
