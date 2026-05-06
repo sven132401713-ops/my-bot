@@ -1,10 +1,12 @@
 import asyncio
-from aiogram import Bot, Dispatcher 
+import logging
+import os
+
+from aiogram import Bot, Dispatcher
+from bot.handlers import router
 from bot.vk_handler import setup_vk_app
 from aiohttp import web
-import asyncio
-from bot.config import BOT_TOKEN
-from bot.handlers import router
+
 
 async def main():
     bot = Bot(token=os.getenv("BOT_TOKEN"))
@@ -12,16 +14,23 @@ async def main():
 
     dp.include_router(router)
 
-    # запускаем Telegram
+    # Telegram polling
     asyncio.create_task(dp.start_polling(bot))
 
-    # запускаем VK сервер
+    # VK webhook server
     app = setup_vk_app()
+
     runner = web.AppRunner(app)
     await runner.setup()
+
     site = web.TCPSite(runner, "0.0.0.0", 8080)
     await site.start()
 
-    # держим процесс
+    # держим процесс живым
     while True:
         await asyncio.sleep(3600)
+
+
+if __name__ == "__main__":
+    logging.basicConfig(level=logging.INFO)
+    asyncio.run(main())
