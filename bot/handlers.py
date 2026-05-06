@@ -86,51 +86,6 @@ async def order_instruction(message: Message):
         "Если потребуется уточнение, менеджер свяжется с вами.",
         reply_markup=main_keyboard
     )
-
-
-@router.message()
-async def receive_order(message: Message):
-    if not message.text:
-        await message.answer("Пожалуйста, отправьте заказ текстовым сообщением.")
-        return
-
-    if message.text in [
-        "📋 Прайс лист",
-        "🛒 Сделать заказ",
-        "🚚 Информация по доставке",
-        "☎️ Связаться с менеджером"
-    ]:
-        return
-
-    text = message.text.strip().lower()
-
-    if len(text) < 10 or text in ["привет", "здравствуйте", "ок", "спасибо"]:
-        await message.answer(
-            "Пожалуйста, нажмите «🛒 Сделать заказ» и отправьте заказ одним сообщением.",
-            reply_markup=main_keyboard
-        )
-        return
-
-    username = message.from_user.username
-    username_text = f"@{username}" if username else "username не указан"
-
-    text = (
-        "🆕 Новый заказ:\n\n"
-        f"{message.text}\n\n"
-        f"Telegram клиента: {username_text}\n"
-        f"Telegram ID: {message.from_user.id}\n"
-        f"Имя в Telegram: {message.from_user.full_name}"
-    )
-
-    await message.bot.send_message(ADMIN_ID, text)
-
-    await message.answer(
-        "✅ Заказ принят!\n\n"
-        "Мы получили вашу заявку.\n"
-        "Свяжемся с вами в ближайшее время.\n\n"
-        "Спасибо 🙌",
-        reply_markup=main_keyboard
-    )
 @router.message(Command("vkreply"))
 async def vk_reply_handler(message: Message, command: CommandObject):
     if message.from_user.id != ADMIN_ID:
@@ -179,3 +134,47 @@ async def vk_reply_handler(message: Message, command: CommandObject):
         return
 
     await message.answer("✅ Ответ отправлен в VK.")
+
+@router.message()
+async def receive_order(message: Message):
+    if not message.text:
+        await message.answer("Пожалуйста, отправьте заказ текстовым сообщением.")
+        return
+
+    if message.text in [
+        "📋 Прайс лист",
+        "🛒 Сделать заказ",
+        "🚚 Информация по доставке",
+        "☎️ Связаться с менеджером"
+    ]:
+        return
+
+    text = message.text.strip().lower()
+
+    if len(text) < 10 or text in ["привет", "здравствуйте", "ок", "спасибо"]:
+        await message.answer(
+            "Пожалуйста, нажмите «🛒 Сделать заказ» и отправьте заказ одним сообщением.",
+            reply_markup=main_keyboard
+        )
+        return
+
+    username = message.from_user.username
+    username_text = f"@{username}" if username else "username не указан"
+
+    text = (
+        "🆕 Новый заказ:\n\n"
+        f"{message.text}\n\n"
+        f"Telegram клиента: {username_text}\n"
+        f"Telegram ID: {message.from_user.id}\n"
+        f"Имя в Telegram: {message.from_user.full_name}"
+    )
+
+    await message.bot.send_message(ADMIN_ID, text)
+
+    await message.answer(
+        "✅ Заказ принят!\n\n"
+        "Мы получили вашу заявку.\n"
+        "Свяжемся с вами в ближайшее время.\n\n"
+        "Спасибо 🙌",
+        reply_markup=main_keyboard
+    )
