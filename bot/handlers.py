@@ -2,6 +2,7 @@ from aiogram import Router, F
 from aiogram.filters import Command, CommandObject
 from aiogram.types import Message, ReplyKeyboardMarkup, KeyboardButton, FSInputFile
 from aiohttp import ClientSession
+from bot.database import save_order
 import os
 
 router = Router()
@@ -160,7 +161,13 @@ async def receive_order(message: Message):
 
     username = message.from_user.username
     username_text = f"@{username}" if username else "username не указан"
-
+    save_order(
+    source="Telegram",
+    order_text=message.text,
+    client_username=username_text,
+    client_id=message.from_user.id,
+    client_name=message.from_user.full_name
+    )
     text = (
         "🆕 Новый заказ:\n\n"
         f"{message.text}\n\n"
