@@ -2,7 +2,7 @@ from aiogram import Router, F
 from aiogram.filters import Command, CommandObject
 from aiogram.types import Message, ReplyKeyboardMarkup, KeyboardButton, FSInputFile
 from aiohttp import ClientSession
-from bot.database import save_order, get_all_orders, export_orders_to_excel
+from bot.database import save_order, get_all_orders
 import os
 
 router = Router()
@@ -158,19 +158,7 @@ async def show_orders(message: Message):
         )
 
     await message.answer(text)
-@router.message(Command("export"))
-async def export_orders(message: Message):
-    if message.from_user.id != ADMIN_ID:
-        return
 
-    filename = export_orders_to_excel()
-
-    document = FSInputFile(filename)
-
-    await message.answer_document(
-        document=document,
-        caption="📦 Экспорт заказов"
-    )
 @router.message()
 async def receive_order(message: Message):
     if not message.text:
