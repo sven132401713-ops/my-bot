@@ -2,7 +2,7 @@ from aiogram import Router, F
 from aiogram.filters import Command, CommandObject
 from aiogram.types import Message, ReplyKeyboardMarkup, KeyboardButton, FSInputFile
 from aiohttp import ClientSession
-from bot.database import save_order
+from bot.database import save_order, get_all_orders
 import os
 
 router = Router()
@@ -135,7 +135,29 @@ async def vk_reply_handler(message: Message, command: CommandObject):
         return
 
     await message.answer("✅ Ответ отправлен в VK.")
+@router.message(Command("orders"))
+async def show_orders(message: Message):
+    if message.from_user.id != ADMIN_ID:
+        return
 
+    orders = get_all_orders()
+
+    if not orders:
+        await message.answer("Заказов пока нет.")
+        return
+
+    text = "📦 Последние заказы:\n\n"
+
+    for order in orders[:10]:
+        text += (
+            f"#{order[0]}\n"
+            f"Дата: {order[1]}\n"
+            f"Источник: {order[2]}\n"
+            f"Заказ: {order[3]}\n"
+            f"Клиент: {order[4]}\n\n"
+        )
+
+    await message.answer(text)
 @router.message()
 async def receive_order(message: Message):
     if not message.text:

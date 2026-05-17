@@ -55,3 +55,19 @@ def save_order(source, order_text, client_username, client_id, client_name):
 
     conn.commit()
     conn.close()
+    def get_all_orders():
+    conn = sqlite3.connect(DB_NAME)
+    cursor = conn.cursor()
+
+    cursor.execute(
+        """
+        SELECT id, created_at, source, order_text, client_username, client_id, client_name
+        FROM orders
+        ORDER BY id DESC
+        """
+    )
+
+    rows = cursor.fetchall()
+    conn.close()
+
+    return rows
