@@ -74,12 +74,11 @@ def get_all_orders():
     conn.close()
 
     return rows
-    def export_orders_to_excel(filename="orders.xlsx"):
+def export_orders_to_excel(filename="orders.xlsx"):
     orders = get_all_orders()
 
     wb = Workbook()
     ws = wb.active
-
     ws.title = "Orders"
 
     headers = [
