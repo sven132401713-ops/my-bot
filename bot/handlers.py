@@ -64,8 +64,8 @@ async def delivery_handler(message: Message):
 async def contact_manager(message: Message):
     await message.answer(
         "📞 Связь с менеджером:\n\n"
-        "Телефон: +7XXXXXXXXXX\n"
-        "WhatsApp: +7XXXXXXXXXX\n\n"
+        "Телефон: +79874416997\n"
+        "Telegram: @ferma_163\n\n"
         "🕒 Время работы:\n"
         "Ежедневно с 9:00 до 20:00",
         reply_markup=main_keyboard
