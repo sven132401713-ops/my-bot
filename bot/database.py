@@ -1,4 +1,4 @@
-from openpyxl import Workbook
+
 import sqlite3
 from datetime import datetime
 
@@ -74,28 +74,5 @@ def get_all_orders():
     conn.close()
 
     return rows
-def export_orders_to_excel(filename="orders.xlsx"):
-    orders = get_all_orders()
-
-    wb = Workbook()
-    ws = wb.active
-    ws.title = "Orders"
-
-    headers = [
-        "ID",
-        "Дата",
-        "Источник",
-        "Заказ",
-        "Telegram клиента",
-        "Telegram ID",
-        "Имя"
-    ]
-
-    ws.append(headers)
-
-    for order in orders:
-        ws.append(order)
-
-    wb.save(filename)
 
     return filename
