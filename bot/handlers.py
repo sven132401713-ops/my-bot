@@ -2,7 +2,14 @@ from aiogram import Router, F
 from aiogram.filters import Command, CommandObject
 from aiogram.types import Message, ReplyKeyboardMarkup, KeyboardButton, FSInputFile
 from aiohttp import ClientSession
-from bot.database import save_order, get_all_orders, get_stats, get_extended_stats
+from bot.database import (
+    save_order,
+    get_all_orders,
+    get_stats,
+    get_extended_stats,
+    save_client,
+    get_clients
+)
 from bot.ai_helper import ask_ai
 import os
 
@@ -28,6 +35,15 @@ main_keyboard = ReplyKeyboardMarkup(
 
 @router.message(Command("start"))
 async def start_handler(message: Message):
+    username = message.from_user.username
+    username_text = f"@{username}" if username else ""
+
+    save_client(
+        platform="Telegram",
+        client_id=message.from_user.id,
+        client_name=message.from_user.full_name,
+        username=username_text
+    )       
     await message.answer(
         f"👋 Здравствуйте, {message.from_user.first_name}!\n\n"
         "Добро пожаловать в Ферма63 🥛\n\n"
@@ -306,7 +322,41 @@ async def popular_handler(message: Message):
         "📋 Цены смотрите в разделе «Прайс лист».\n"
         "🛒 Для заказа нажмите «Сделать заказ».",
         reply_markup=main_keyboard
-    )     
+    )   
+@router.message(Command("send"))
+async def send_broadcast(message: Message):
+    if message.from_user.id != ADMIN_ID:
+        return
+
+    text = message.text.replace("/send", "").strip()
+
+    if not text:
+        await message.answer(
+            "Использование:\n/send Ваш текст"
+        )
+        return
+
+    clients = get_clients()
+
+    success = 0
+
+    for platform, client_id in clients:
+        try:
+            if platform == "Telegram":
+                await message.bot.send_message(
+                    chat_id=int(client_id),
+                    text=text
+                )
+
+                success += 1
+
+        except:
+            pass
+
+    await message.answer(
+        f"✅ Рассылка завершена\n\n"
+        f"Отправлено: {success}"
+    )      
 @router.message()
 async def receive_order(message: Message):
     if not message.text:

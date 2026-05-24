@@ -2,7 +2,7 @@ from aiohttp import web, ClientSession, FormData
 import os
 import random
 import json
-from bot.database import save_order
+from bot.database import save_order, save_client
 VK_CONFIRMATION = os.getenv("VK_CONFIRMATION")
 ADMIN_ID = os.getenv("ADMIN_ID")
 BOT_TOKEN = os.getenv("BOT_TOKEN")
@@ -169,6 +169,12 @@ async def handle(request):
         text_from_vk = message.get("text", "").strip()
         text_lower = text_from_vk.lower()
         user_id = message.get("from_id", "")
+        save_client(
+            platform="VK",
+            client_id=str(user_id),
+            client_name="VK клиент",
+            username=f"vk_{user_id}"
+        )        
 
         greetings = [
             "/start",

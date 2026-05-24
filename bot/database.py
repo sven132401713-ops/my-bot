@@ -134,3 +134,55 @@ def get_extended_stats():
         "today": today,
         "week": week
     }
+    def init_clients_table():
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS clients (
+            id SERIAL PRIMARY KEY,
+            platform TEXT,
+            client_id TEXT UNIQUE,
+            client_name TEXT,
+            username TEXT
+        )
+    """)
+
+    conn.commit()
+    conn.close()
+
+
+def save_client(platform, client_id, client_name="", username=""):
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    cursor.execute(
+        """
+        INSERT INTO clients (platform, client_id, client_name, username)
+        VALUES (%s, %s, %s, %s)
+        ON CONFLICT (client_id) DO UPDATE SET
+            platform = EXCLUDED.platform,
+            client_name = EXCLUDED.client_name,
+            username = EXCLUDED.username
+        """,
+        (platform, str(client_id), client_name, username)
+    )
+
+    conn.commit()
+    conn.close()
+
+
+def get_clients():
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        SELECT platform, client_id
+        FROM clients
+    """)
+
+    rows = cursor.fetchall()
+
+    conn.close()
+
+    return rows

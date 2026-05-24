@@ -1,7 +1,7 @@
 import asyncio
 import logging
 import os
-from bot.database import init_db
+from bot.database import init_db, init_clients_table
 from aiogram import Bot, Dispatcher
 from bot.handlers import router
 from bot.vk_handler import setup_vk_app
@@ -10,6 +10,7 @@ from aiohttp import web
 
 async def main():
     init_db()
+    init_clients_table()
     bot = Bot(token=os.getenv("BOT_TOKEN"))
     dp = Dispatcher()
 
