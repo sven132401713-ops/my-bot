@@ -106,7 +106,7 @@ def get_stats():
         "telegram": telegram,
         "vk": vk
     }
-    def get_extended_stats():
+def get_extended_stats():
     conn = get_connection()
     cursor = conn.cursor()
 
