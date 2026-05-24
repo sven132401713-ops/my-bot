@@ -76,3 +76,23 @@ def get_all_orders():
     return rows
 
     return filename
+def get_stats():
+    conn = sqlite3.connect(DB_NAME)
+    cursor = conn.cursor()
+
+    cursor.execute("SELECT COUNT(*) FROM orders")
+    total = cursor.fetchone()[0]
+
+    cursor.execute("SELECT COUNT(*) FROM orders WHERE source='Telegram'")
+    telegram = cursor.fetchone()[0]
+
+    cursor.execute("SELECT COUNT(*) FROM orders WHERE source='VK'")
+    vk = cursor.fetchone()[0]
+
+    conn.close()
+
+    return {
+        "total": total,
+        "telegram": telegram,
+        "vk": vk
+    }    
