@@ -134,7 +134,7 @@ def get_extended_stats():
         "today": today,
         "week": week
     }
-    def init_clients_table():
+def init_clients_table():
     conn = get_connection()
     cursor = conn.cursor()
 
@@ -185,4 +185,4 @@ def get_clients():
 
     conn.close()
 
-    return rows
+    return rows    
