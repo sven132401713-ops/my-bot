@@ -271,60 +271,68 @@ async def receive_order(message: Message):
         "📋 Прайс лист",
         "🛒 Сделать заказ",
         "🚚 Информация по доставке",
-        "☎️ Связаться с менеджером"
-        "🥛 Каталог"
+        "☎️ Связаться с менеджером",
+        "🥛 Каталог",
+        "🥛 Молочная продукция",
+        "🥟 Полуфабрикаты",
+        "🥫 Домашняя консервация",
+        "⭐ Отзывы",
+        "⬅ Назад"
     ]:
         return
 
-    text = message.text.strip().lower()
-        ai_keywords = [
-            "что",
-            "посоветуй",
-            "есть",
-            "какие",
-            "сколько",
-            "подойдет",
-            "детям",
-            "ужин",
-            "завтрак"
-        ]
+    original_text = message.text
+    text_lower = original_text.strip().lower()
 
-        text_lower = text.lower()
-
-        if any(word in text_lower for word in ai_keywords):
-            answer = await ask_ai(text)
-
-            await message.answer(
-                answer,
-                reply_markup=main_keyboard
-            )
-
-            return
-    if len(text) < 10 or text in ["привет", "здравствуйте", "ок", "спасибо"]:
+    if len(text_lower) < 10 or text_lower in ["привет", "здравствуйте", "ок", "спасибо"]:
         await message.answer(
             "Пожалуйста, нажмите «🛒 Сделать заказ» и отправьте заказ одним сообщением.",
             reply_markup=main_keyboard
         )
         return
 
+    ai_keywords = [
+        "что",
+        "посоветуй",
+        "есть",
+        "какие",
+        "сколько",
+        "подойдет",
+        "подойдёт",
+        "детям",
+        "ужин",
+        "завтрак"
+    ]
+
+    if any(word in text_lower for word in ai_keywords):
+        answer = await ask_ai(original_text)
+
+        await message.answer(
+            answer,
+            reply_markup=main_keyboard
+        )
+        return
+
     username = message.from_user.username
     username_text = f"@{username}" if username else "username не указан"
+
     save_order(
-    source="Telegram",
-    order_text=message.text,
-    client_username=username_text,
-    client_id=message.from_user.id,
-    client_name=message.from_user.full_name
+        source="Telegram",
+        order_text=original_text,
+        client_username=username_text,
+        client_id=message.from_user.id,
+        client_name=message.from_user.full_name
     )
-    text = (
+
+    order_text = (
         "🆕 Новый заказ:\n\n"
-        f"{message.text}\n\n"
+        f"{original_text}\n\n"
         f"Telegram клиента: {username_text}\n"
         f"Telegram ID: {message.from_user.id}\n"
         f"Имя в Telegram: {message.from_user.full_name}"
     )
 
-    await message.bot.send_message(ADMIN_ID, text)
+    await message.bot.send_message(ADMIN_ID, order_text)
 
     await message.answer(
         "✅ Заказ принят!\n\n"
