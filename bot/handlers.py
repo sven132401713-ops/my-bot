@@ -15,6 +15,9 @@ main_keyboard = ReplyKeyboardMarkup(
     keyboard=[
         [KeyboardButton(text="📋 Прайс лист")],
         [KeyboardButton(text="🥛 Каталог")],
+        [KeyboardButton(text="⭐ Отзывы")],
+        [KeyboardButton(text="🔥 Акции недели")],
+        [KeyboardButton(text="🏆 Чаще всего покупают")],
         [KeyboardButton(text="🛒 Сделать заказ")],
         [KeyboardButton(text="🚚 Информация по доставке")],
         [KeyboardButton(text="☎️ Связаться с менеджером")],
@@ -249,8 +252,17 @@ async def canned_handler(message: Message):
 @router.message(F.text == "⭐ Отзывы")
 async def reviews_handler(message: Message):
     await message.answer(
-        "⭐ Отзывы клиентов скоро добавим.\n\n"
-        "Пока можете посмотреть актуальный прайс и оформить заказ.",
+        "⭐ Отзывы клиентов:\n\n"
+        "👤 Анна\n"
+        "Очень вкусный творог и сметана, заказываем постоянно.\n\n"
+
+        "👤 Сергей\n"
+        "Манты с горбушей понравились, доставка вовремя.\n\n"
+
+        "👤 Ирина\n"
+        "Домашняя тушёнка отличная, будем брать ещё.\n\n"
+
+        "Спасибо нашим клиентам 🙌",
         reply_markup=main_keyboard
     )
 
@@ -260,7 +272,31 @@ async def back_handler(message: Message):
     await message.answer(
         "Главное меню:",
         reply_markup=main_keyboard
-    )    
+    )   
+@router.message(F.text == "🔥 Акции недели")
+async def weekly_promo_handler(message: Message):
+    await message.answer(
+        "🔥 Акции недели:\n\n"
+        "Сейчас акции уточняйте у менеджера.\n\n"
+        "☎️ Связаться с менеджером: @ferma_163",
+        reply_markup=main_keyboard
+    )
+
+
+@router.message(F.text == "🏆 Чаще всего покупают")
+async def popular_handler(message: Message):
+    await message.answer(
+        "🏆 Чаще всего покупают:\n\n"
+        "• Творог\n"
+        "• Сметана\n"
+        "• Пельмени свинина/говядина\n"
+        "• Манты с горбушей\n"
+        "• Сырники классические\n"
+        "• Домашняя тушёнка\n\n"
+        "📋 Цены смотрите в разделе «Прайс лист».\n"
+        "🛒 Для заказа нажмите «Сделать заказ».",
+        reply_markup=main_keyboard
+    )     
 @router.message()
 async def receive_order(message: Message):
     if not message.text:
