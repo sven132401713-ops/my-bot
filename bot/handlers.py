@@ -173,7 +173,17 @@ async def show_orders(message: Message):
         )
 
     await message.answer(text)
-
+@router.message(F.text == "🥛 Каталог")
+async def catalog_handler(message: Message):
+    await message.answer(
+        "🥛 Каталог:\n\n"
+        "🥛 Молочная продукция\n"
+        "🥟 Полуфабрикаты\n"
+        "🐟 Рыба\n"
+        "🍖 Мясо\n\n"
+        "Полный актуальный ассортимент смотрите в разделе «📋 Прайс лист».",
+        reply_markup=main_keyboard
+    )
 @router.message()
 async def receive_order(message: Message):
     if not message.text:
@@ -185,6 +195,7 @@ async def receive_order(message: Message):
         "🛒 Сделать заказ",
         "🚚 Информация по доставке",
         "☎️ Связаться с менеджером"
+        "🥛 Каталог"
     ]:
         return
 
