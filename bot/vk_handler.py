@@ -152,9 +152,10 @@ async def handle(request):
     if event_type == "message_new":
         message = data.get("object", {}).get("message", {})
         text_from_vk = message.get("text", "").strip()
+                text_lower = text_from_vk.lower()
         user_id = message.get("from_id", "")
 
-        if text_from_vk.lower() in ["/start", "начать", "старт", "привет"]:
+                if text_lower in ["/start", "начать", "старт", "привет", "здравствуйте", "добрый день", "добрый вечер", "доброе утро"] or len(text_from_vk) < 15:
             await send_vk_message(user_id, "Здравствуйте! Выберите нужный раздел:")
             return web.Response(text="ok")
 
@@ -180,12 +181,7 @@ async def handle(request):
         if text_from_vk == "☎️ Связаться с менеджером":
             await send_vk_message(user_id, CONTACT_TEXT)
             return web.Response(text="ok")
-        if len(text_from_vk) < 10:
-            await send_vk_message(
-                user_id,
-                "Здравствуйте! Выберите нужный раздел:"
-            )
-            return web.Response(text="ok")
+       
         text = (
             "🆕 Новый заказ из VK:\n\n"
             f"{text_from_vk}\n\n"
