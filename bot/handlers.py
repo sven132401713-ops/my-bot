@@ -3,6 +3,7 @@ from aiogram.filters import Command, CommandObject
 from aiogram.types import Message, ReplyKeyboardMarkup, KeyboardButton, FSInputFile
 from aiohttp import ClientSession
 from bot.database import save_order, get_all_orders, get_stats
+from bot.ai_helper import ask_ai
 import os
 
 router = Router()
@@ -276,7 +277,29 @@ async def receive_order(message: Message):
         return
 
     text = message.text.strip().lower()
+        ai_keywords = [
+            "что",
+            "посоветуй",
+            "есть",
+            "какие",
+            "сколько",
+            "подойдет",
+            "детям",
+            "ужин",
+            "завтрак"
+        ]
 
+        text_lower = text.lower()
+
+        if any(word in text_lower for word in ai_keywords):
+            answer = await ask_ai(text)
+
+            await message.answer(
+                answer,
+                reply_markup=main_keyboard
+            )
+
+            return
     if len(text) < 10 or text in ["привет", "здравствуйте", "ок", "спасибо"]:
         await message.answer(
             "Пожалуйста, нажмите «🛒 Сделать заказ» и отправьте заказ одним сообщением.",
