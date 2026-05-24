@@ -180,7 +180,12 @@ async def handle(request):
         if text_from_vk == "☎️ Связаться с менеджером":
             await send_vk_message(user_id, CONTACT_TEXT)
             return web.Response(text="ok")
-
+        if len(text_from_vk) < 10:
+            await send_vk_message(
+                user_id,
+                "Здравствуйте! Выберите нужный раздел:"
+            )
+            return web.Response(text="ok")
         text = (
             "🆕 Новый заказ из VK:\n\n"
             f"{text_from_vk}\n\n"
