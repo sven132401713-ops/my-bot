@@ -81,7 +81,12 @@ async def send_vk_photo(user_id, image_path):
             }
         ) as response:
             upload_data = await response.json()
-
+        if "response" not in upload_data:
+            await send_telegram_message(
+                "❌ Ошибка VK при получении upload_url:\n"
+                f"{upload_data}"
+            )
+            return
         upload_url = upload_data["response"]["upload_url"]
 
         # 2. Загружаем фото на сервер VK
