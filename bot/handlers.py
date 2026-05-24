@@ -304,13 +304,27 @@ async def receive_order(message: Message):
         "завтрак"
     ]
 
-    if any(word in text_lower for word in ai_keywords):
-        answer = await ask_ai(original_text)
+        if any(word in text_lower for word in ai_keywords):
+        try:
+            answer = await ask_ai(original_text)
 
-        await message.answer(
-            answer,
-            reply_markup=main_keyboard
-        )
+            await message.answer(
+                answer,
+                reply_markup=main_keyboard
+            )
+
+        except Exception as e:
+            await message.answer(
+                "Сейчас не удалось получить ответ от ИИ-помощника.\n"
+                "Попробуйте ещё раз позже или свяжитесь с менеджером.",
+                reply_markup=main_keyboard
+            )
+
+            await message.bot.send_message(
+                ADMIN_ID,
+                f"❌ Ошибка ИИ:\n{e}"
+            )
+
         return
 
     username = message.from_user.username
