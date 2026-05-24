@@ -26,10 +26,17 @@ main_keyboard = ReplyKeyboardMarkup(
 )
 
 
-@router.message(Command("start"))
+@router.message(CommandStart())
 async def start_handler(message: Message):
     await message.answer(
-        "Здравствуйте! Выберите нужный раздел:",
+        f"👋 Здравствуйте, {message.from_user.first_name}!\n\n"
+        "Добро пожаловать в Ферма63 🥛\n\n"
+        "У нас вы можете:\n"
+        "🥛 Посмотреть каталог\n"
+        "📋 Открыть прайс-лист\n"
+        "🛒 Оформить заказ\n"
+        "🚚 Узнать условия доставки\n\n"
+        "Выберите нужный раздел ниже 👇",
         reply_markup=main_keyboard
     )
 
