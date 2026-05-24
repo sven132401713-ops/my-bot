@@ -2,7 +2,7 @@ from aiohttp import web, ClientSession, FormData
 import os
 import random
 import json
-
+from bot.database import save_order
 VK_CONFIRMATION = os.getenv("VK_CONFIRMATION")
 ADMIN_ID = os.getenv("ADMIN_ID")
 BOT_TOKEN = os.getenv("BOT_TOKEN")
@@ -206,7 +206,13 @@ async def handle(request):
         if text_from_vk == "☎️ Связаться с менеджером":
             await send_vk_message(user_id, CONTACT_TEXT)
             return web.Response(text="ok")
-
+        save_order(
+            source="VK",
+            order_text=text_from_vk,
+            username=f"vk_{user_id}",
+            user_id=str(user_id),
+            first_name="VK клиент"
+        )
         text = (
             "🆕 Новый заказ из VK:\n\n"
             f"{text_from_vk}\n\n"
