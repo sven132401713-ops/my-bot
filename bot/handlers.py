@@ -13,6 +13,7 @@ ADMIN_ID = 5876599297
 main_keyboard = ReplyKeyboardMarkup(
     keyboard=[
         [KeyboardButton(text="📋 Прайс лист")],
+        [KeyboardButton(text="🥛 Каталог")],
         [KeyboardButton(text="🛒 Сделать заказ")],
         [KeyboardButton(text="🚚 Информация по доставке")],
         [KeyboardButton(text="☎️ Связаться с менеджером")],
