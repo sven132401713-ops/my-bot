@@ -209,10 +209,10 @@ async def handle(request):
         save_order(
             source="VK",
             order_text=text_from_vk,
-            username=f"vk_{user_id}",
-            user_id=str(user_id),
-            first_name="VK клиент"
-        )
+            client_username=f"vk_{user_id}",
+            client_id=str(user_id),
+            client_name="VK клиент"
+        )                
         text = (
             "🆕 Новый заказ из VK:\n\n"
             f"{text_from_vk}\n\n"
