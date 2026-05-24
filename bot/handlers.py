@@ -26,7 +26,7 @@ main_keyboard = ReplyKeyboardMarkup(
 )
 
 
-@router.message(CommandStart())
+@router.message(Command("start"))
 async def start_handler(message: Message):
     await message.answer(
         f"👋 Здравствуйте, {message.from_user.first_name}!\n\n"
