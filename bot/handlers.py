@@ -176,15 +176,67 @@ async def show_orders(message: Message):
     await message.answer(text)
 @router.message(F.text == "🥛 Каталог")
 async def catalog_handler(message: Message):
+
+    catalog_keyboard = ReplyKeyboardMarkup(
+        keyboard=[
+            [KeyboardButton(text="🥛 Молочная продукция")],
+            [KeyboardButton(text="🥟 Полуфабрикаты")],
+            [KeyboardButton(text="🥫 Домашняя консервация")],
+            [KeyboardButton(text="⭐ Отзывы")],
+            [KeyboardButton(text="⬅ Назад")]
+        ],
+        resize_keyboard=True
+    )
+
     await message.answer(
-        "🥛 Каталог:\n\n"
-        "🥛 Молочная продукция\n"
-        "🥟 Полуфабрикаты\n"
-        "🐟 Рыба\n"
-        "🍖 Мясо\n\n"
-        "Полный актуальный ассортимент смотрите в разделе «📋 Прайс лист».",
+        "Выберите категорию:",
+        reply_markup=catalog_keyboard
+    )
+@router.message(F.text == "🥛 Молочная продукция")
+async def dairy_handler(message: Message):
+    await message.answer(
+        "🥛 Молочная продукция:\n\n"
+        "Актуальные позиции и цены смотрите в разделе «📋 Прайс лист».\n\n"
+        "Для оформления заказа нажмите «🛒 Сделать заказ».",
         reply_markup=main_keyboard
     )
+
+
+@router.message(F.text == "🥟 Полуфабрикаты")
+async def semi_finished_handler(message: Message):
+    await message.answer(
+        "🥟 Полуфабрикаты:\n\n"
+        "Актуальные позиции и цены смотрите в разделе «📋 Прайс лист».\n\n"
+        "Для оформления заказа нажмите «🛒 Сделать заказ».",
+        reply_markup=main_keyboard
+    )
+
+
+@router.message(F.text == "🥫 Домашняя консервация")
+async def canned_handler(message: Message):
+    await message.answer(
+        "🥫 Домашняя консервация:\n\n"
+        "Тушёнка и другие позиции — в актуальном прайс-листе.\n\n"
+        "Для оформления заказа нажмите «🛒 Сделать заказ».",
+        reply_markup=main_keyboard
+    )
+
+
+@router.message(F.text == "⭐ Отзывы")
+async def reviews_handler(message: Message):
+    await message.answer(
+        "⭐ Отзывы клиентов скоро добавим.\n\n"
+        "Пока можете посмотреть актуальный прайс и оформить заказ.",
+        reply_markup=main_keyboard
+    )
+
+
+@router.message(F.text == "⬅ Назад")
+async def back_handler(message: Message):
+    await message.answer(
+        "Главное меню:",
+        reply_markup=main_keyboard
+    )    
 @router.message()
 async def receive_order(message: Message):
     if not message.text:
