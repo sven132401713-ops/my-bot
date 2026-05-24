@@ -106,3 +106,31 @@ def get_stats():
         "telegram": telegram,
         "vk": vk
     }
+    def get_extended_stats():
+    conn = get_connection()
+    cursor = conn.cursor()
+
+    cursor.execute(
+        """
+        SELECT COUNT(*)
+        FROM orders
+        WHERE created_at::date = CURRENT_DATE
+        """
+    )
+    today = cursor.fetchone()[0]
+
+    cursor.execute(
+        """
+        SELECT COUNT(*)
+        FROM orders
+        WHERE created_at::date >= CURRENT_DATE - INTERVAL '7 days'
+        """
+    )
+    week = cursor.fetchone()[0]
+
+    conn.close()
+
+    return {
+        "today": today,
+        "week": week
+    }

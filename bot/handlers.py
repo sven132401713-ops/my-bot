@@ -2,7 +2,7 @@ from aiogram import Router, F
 from aiogram.filters import Command, CommandObject
 from aiogram.types import Message, ReplyKeyboardMarkup, KeyboardButton, FSInputFile
 from aiohttp import ClientSession
-from bot.database import save_order, get_all_orders, get_stats
+from bot.database import save_order, get_all_orders, get_stats, get_extended_stats
 from bot.ai_helper import ask_ai
 import os
 
@@ -146,15 +146,18 @@ async def stats_handler(message: Message):
         return
 
     stats = get_stats()
+    extended = get_extended_stats()
 
     text = (
         f"📊 Статистика\n\n"
         f"📦 Всего заказов: {stats['total']}\n"
         f"✈ Telegram: {stats['telegram']}\n"
-        f"📘 VK: {stats['vk']}"
+        f"📘 VK: {stats['vk']}\n\n"
+        f"📅 Сегодня: {extended['today']}\n"
+        f"🗓 За 7 дней: {extended['week']}"
     )
 
-    await message.answer(text)    
+    await message.answer(text) 
 @router.message(Command("orders"))
 async def show_orders(message: Message):
     if message.from_user.id != ADMIN_ID:
