@@ -153,15 +153,15 @@ async def handle(request):
             return web.Response(text="ok")
 
         if text_from_vk == "📋 Прайс лист":
-    base_dir = os.path.abspath(os.path.join(os.getcwd(), "bot", "images"))
+            base_dir = os.path.abspath(os.path.join(os.getcwd(), "bot", "images"))
 
-    await send_vk_photo(user_id, os.path.join(base_dir, "price1.png"))
-    await send_vk_photo(user_id, os.path.join(base_dir, "price2.png"))
-    await send_vk_photo(user_id, os.path.join(base_dir, "price3.png"))
+            await send_vk_photo(user_id, os.path.join(base_dir, "price1.png"))
+            await send_vk_photo(user_id, os.path.join(base_dir, "price2.png"))
+            await send_vk_photo(user_id, os.path.join(base_dir, "price3.png"))
 
-    await send_vk_message(user_id, "Для заказа нажмите «🛒 Сделать заказ».")
+            await send_vk_message(user_id, "Для заказа нажмите «🛒 Сделать заказ».")
 
-    return web.Response(text="ok")
+            return web.Response(text="ok")
 
         if text_from_vk == "🛒 Сделать заказ":
             await send_vk_message(user_id, ORDER_TEXT)
