@@ -68,9 +68,10 @@ async def send_vk_message(user_id, text):
                 "v": "5.199"
             }
         )
+
+
 async def send_vk_photo(user_id, image_path):
     async with ClientSession() as session:
-        # 1. Получаем адрес для загрузки фото
         async with session.post(
             "https://api.vk.com/method/photos.getMessagesUploadServer",
             data={
@@ -81,27 +82,34 @@ async def send_vk_photo(user_id, image_path):
             }
         ) as response:
             upload_data = await response.json()
+
         if "response" not in upload_data:
             await send_telegram_message(
                 "❌ Ошибка VK при получении upload_url:\n"
                 f"{upload_data}"
             )
             return
+
         upload_url = upload_data["response"]["upload_url"]
 
-        # 2. Загружаем фото на сервер VK
         form = FormData()
-        form.add_field(
-            "photo",
-            open(image_path, "rb"),
-            filename=os.path.basename(image_path),
-            content_type="image/png"
-        )
+        with open(image_path, "rb") as photo_file:
+            form.add_field(
+                "photo",
+                photo_file,
+                filename=os.path.basename(image_path),
+                content_type="image/png"
+            )
 
-        async with session.post(upload_url, data=form) as response:
-            uploaded = await response.json()
+            async with session.post(upload_url, data=form) as response:
+                if response.content_type != "application/json":
+                    await send_telegram_message(
+                        "❌ VK не принял фото. Попробуйте нажать прайс ещё раз."
+                    )
+                    return
 
-        # 3. Сохраняем фото в VK
+                uploaded = await response.json()
+
         async with session.post(
             "https://api.vk.com/method/photos.saveMessagesPhoto",
             data={
@@ -114,10 +122,16 @@ async def send_vk_photo(user_id, image_path):
         ) as response:
             saved_data = await response.json()
 
+        if "response" not in saved_data:
+            await send_telegram_message(
+                "❌ Ошибка VK при сохранении фото:\n"
+                f"{saved_data}"
+            )
+            return
+
         photo = saved_data["response"][0]
         attachment = f"photo{photo['owner_id']}_{photo['id']}"
 
-        # 4. Отправляем фото пользователю
         await session.post(
             "https://api.vk.com/method/messages.send",
             data={
@@ -130,6 +144,7 @@ async def send_vk_photo(user_id, image_path):
                 "v": "5.199"
             }
         )
+
 
 async def send_telegram_message(text):
     async with ClientSession() as session:
@@ -152,10 +167,21 @@ async def handle(request):
     if event_type == "message_new":
         message = data.get("object", {}).get("message", {})
         text_from_vk = message.get("text", "").strip()
-                text_lower = text_from_vk.lower()
+        text_lower = text_from_vk.lower()
         user_id = message.get("from_id", "")
 
-                if text_lower in ["/start", "начать", "старт", "привет", "здравствуйте", "добрый день", "добрый вечер", "доброе утро"] or len(text_from_vk) < 15:
+        greetings = [
+            "/start",
+            "начать",
+            "старт",
+            "привет",
+            "здравствуйте",
+            "добрый день",
+            "добрый вечер",
+            "доброе утро"
+        ]
+
+        if text_lower in greetings or len(text_from_vk) < 15:
             await send_vk_message(user_id, "Здравствуйте! Выберите нужный раздел:")
             return web.Response(text="ok")
 
@@ -167,7 +193,6 @@ async def handle(request):
             await send_vk_photo(user_id, os.path.join(base_dir, "price3.png"))
 
             await send_vk_message(user_id, "Для заказа нажмите «🛒 Сделать заказ».")
-
             return web.Response(text="ok")
 
         if text_from_vk == "🛒 Сделать заказ":
@@ -181,7 +206,7 @@ async def handle(request):
         if text_from_vk == "☎️ Связаться с менеджером":
             await send_vk_message(user_id, CONTACT_TEXT)
             return web.Response(text="ok")
-       
+
         text = (
             "🆕 Новый заказ из VK:\n\n"
             f"{text_from_vk}\n\n"
