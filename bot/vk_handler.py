@@ -76,6 +76,7 @@ async def send_vk_photo(user_id, image_path):
             data={
                 "access_token": VK_TOKEN,
                 "peer_id": user_id,
+                "group_id": 190030234,
                 "v": "5.199"
             }
         ) as response:
