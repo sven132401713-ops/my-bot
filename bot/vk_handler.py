@@ -124,12 +124,12 @@ async def handle(request):
         text_from_vk = message.get("text", "")
         user_id = message.get("from_id", "")
 
-        if text_from_vk in ["/start", "Начать", "Старт"]:
-            await send_vk_message(
-                user_id,
-                "Здравствуйте! Выберите нужный раздел:"
-            )
-            return web.Response(text="ok")
+       if text_from_vk.lower() in ["/start", "начать", "старт", "привет"]:
+    await send_vk_message(
+        user_id,
+        "Здравствуйте! Выберите нужный раздел:"
+    )
+    return web.Response(text="ok")
 
         if text_from_vk == "🚚 Информация по доставке":
             await send_vk_message(user_id, DELIVERY_TEXT)
