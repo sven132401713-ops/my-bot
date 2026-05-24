@@ -1,6 +1,7 @@
 from aiohttp import web, ClientSession
 import os
 import random
+import json
 
 VK_CONFIRMATION = os.getenv("VK_CONFIRMATION")
 ADMIN_ID = os.getenv("ADMIN_ID")
@@ -46,42 +47,10 @@ def get_vk_keyboard():
     return {
         "one_time": False,
         "buttons": [
-            [
-                {
-                    "action": {
-                        "type": "text",
-                        "label": "📋 Прайс лист"
-                    },
-                    "color": "primary"
-                }
-            ],
-            [
-                {
-                    "action": {
-                        "type": "text",
-                        "label": "🛒 Сделать заказ"
-                    },
-                    "color": "positive"
-                }
-            ],
-            [
-                {
-                    "action": {
-                        "type": "text",
-                        "label": "🚚 Информация по доставке"
-                    },
-                    "color": "secondary"
-                }
-            ],
-            [
-                {
-                    "action": {
-                        "type": "text",
-                        "label": "☎️ Связаться с менеджером"
-                    },
-                    "color": "secondary"
-                }
-            ]
+            [{"action": {"type": "text", "label": "📋 Прайс лист"}, "color": "primary"}],
+            [{"action": {"type": "text", "label": "🛒 Сделать заказ"}, "color": "positive"}],
+            [{"action": {"type": "text", "label": "🚚 Информация по доставке"}, "color": "secondary"}],
+            [{"action": {"type": "text", "label": "☎️ Связаться с менеджером"}, "color": "secondary"}],
         ]
     }
 
@@ -95,7 +64,7 @@ async def send_vk_message(user_id, text):
                 "user_id": user_id,
                 "message": text,
                 "random_id": random.randint(1, 999999999),
-                "keyboard": str(get_vk_keyboard()).replace("'", '"'),
+                "keyboard": json.dumps(get_vk_keyboard(), ensure_ascii=False),
                 "v": "5.199"
             }
         )
@@ -121,27 +90,11 @@ async def handle(request):
 
     if event_type == "message_new":
         message = data.get("object", {}).get("message", {})
-        text_from_vk = message.get("text", "")
+        text_from_vk = message.get("text", "").strip()
         user_id = message.get("from_id", "")
 
         if text_from_vk.lower() in ["/start", "начать", "старт", "привет"]:
-            await send_vk_message(
-                user_id,
-                "Здравствуйте! Выберите нужный раздел:"
-            )
-            return web.Response(text="ok")
-    return web.Response(text="ok")
-
-        if text_from_vk == "🚚 Информация по доставке":
-            await send_vk_message(user_id, DELIVERY_TEXT)
-            return web.Response(text="ok")
-
-        if text_from_vk == "🛒 Сделать заказ":
-            await send_vk_message(user_id, ORDER_TEXT)
-            return web.Response(text="ok")
-
-        if text_from_vk == "☎️ Связаться с менеджером":
-            await send_vk_message(user_id, CONTACT_TEXT)
+            await send_vk_message(user_id, "Здравствуйте! Выберите нужный раздел:")
             return web.Response(text="ok")
 
         if text_from_vk == "📋 Прайс лист":
@@ -150,6 +103,18 @@ async def handle(request):
                 "📋 Прайс лист пока доступен в Telegram-боте.\n\n"
                 "Напишите заказ здесь одним сообщением, если уже знаете что нужно."
             )
+            return web.Response(text="ok")
+
+        if text_from_vk == "🛒 Сделать заказ":
+            await send_vk_message(user_id, ORDER_TEXT)
+            return web.Response(text="ok")
+
+        if text_from_vk == "🚚 Информация по доставке":
+            await send_vk_message(user_id, DELIVERY_TEXT)
+            return web.Response(text="ok")
+
+        if text_from_vk == "☎️ Связаться с менеджером":
+            await send_vk_message(user_id, CONTACT_TEXT)
             return web.Response(text="ok")
 
         text = (
