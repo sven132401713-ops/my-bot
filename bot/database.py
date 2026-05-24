@@ -1,19 +1,23 @@
-
-import sqlite3
+import os
+import psycopg2
 from datetime import datetime
 
 
-DB_NAME = "orders.db"
+DATABASE_URL = os.getenv("DATABASE_URL")
+
+
+def get_connection():
+    return psycopg2.connect(DATABASE_URL)
 
 
 def init_db():
-    conn = sqlite3.connect(DB_NAME)
+    conn = get_connection()
     cursor = conn.cursor()
 
     cursor.execute(
         """
         CREATE TABLE IF NOT EXISTS orders (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            id SERIAL PRIMARY KEY,
             created_at TEXT,
             source TEXT,
             order_text TEXT,
@@ -25,11 +29,12 @@ def init_db():
     )
 
     conn.commit()
+    cursor.close()
     conn.close()
 
 
 def save_order(source, order_text, client_username, client_id, client_name):
-    conn = sqlite3.connect(DB_NAME)
+    conn = get_connection()
     cursor = conn.cursor()
 
     cursor.execute(
@@ -42,7 +47,7 @@ def save_order(source, order_text, client_username, client_id, client_name):
             client_id,
             client_name
         )
-        VALUES (?, ?, ?, ?, ?, ?)
+        VALUES (%s, %s, %s, %s, %s, %s)
         """,
         (
             datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
@@ -55,9 +60,12 @@ def save_order(source, order_text, client_username, client_id, client_name):
     )
 
     conn.commit()
+    cursor.close()
     conn.close()
+
+
 def get_all_orders():
-    conn = sqlite3.connect(DB_NAME)
+    conn = get_connection()
     cursor = conn.cursor()
 
     cursor.execute(
@@ -71,13 +79,14 @@ def get_all_orders():
 
     rows = cursor.fetchall()
 
+    cursor.close()
     conn.close()
 
     return rows
 
-    return filename
+
 def get_stats():
-    conn = sqlite3.connect(DB_NAME)
+    conn = get_connection()
     cursor = conn.cursor()
 
     cursor.execute("SELECT COUNT(*) FROM orders")
@@ -89,10 +98,11 @@ def get_stats():
     cursor.execute("SELECT COUNT(*) FROM orders WHERE source='VK'")
     vk = cursor.fetchone()[0]
 
+    cursor.close()
     conn.close()
 
     return {
         "total": total,
         "telegram": telegram,
         "vk": vk
-    }    
+    }
