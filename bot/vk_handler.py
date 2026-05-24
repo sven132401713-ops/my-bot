@@ -1,4 +1,4 @@
-from aiohttp import web, ClientSession
+from aiohttp import web, ClientSession, FormData
 import os
 import random
 import json
@@ -68,7 +68,62 @@ async def send_vk_message(user_id, text):
                 "v": "5.199"
             }
         )
+async def send_vk_photo(user_id, image_path):
+    async with ClientSession() as session:
+        # 1. Получаем адрес для загрузки фото
+        async with session.post(
+            "https://api.vk.com/method/photos.getMessagesUploadServer",
+            data={
+                "access_token": VK_TOKEN,
+                "peer_id": user_id,
+                "v": "5.199"
+            }
+        ) as response:
+            upload_data = await response.json()
 
+        upload_url = upload_data["response"]["upload_url"]
+
+        # 2. Загружаем фото на сервер VK
+        form = FormData()
+        form.add_field(
+            "photo",
+            open(image_path, "rb"),
+            filename=os.path.basename(image_path),
+            content_type="image/png"
+        )
+
+        async with session.post(upload_url, data=form) as response:
+            uploaded = await response.json()
+
+        # 3. Сохраняем фото в VK
+        async with session.post(
+            "https://api.vk.com/method/photos.saveMessagesPhoto",
+            data={
+                "access_token": VK_TOKEN,
+                "photo": uploaded["photo"],
+                "server": uploaded["server"],
+                "hash": uploaded["hash"],
+                "v": "5.199"
+            }
+        ) as response:
+            saved_data = await response.json()
+
+        photo = saved_data["response"][0]
+        attachment = f"photo{photo['owner_id']}_{photo['id']}"
+
+        # 4. Отправляем фото пользователю
+        await session.post(
+            "https://api.vk.com/method/messages.send",
+            data={
+                "access_token": VK_TOKEN,
+                "user_id": user_id,
+                "message": "📋 Прайс лист",
+                "attachment": attachment,
+                "random_id": random.randint(1, 999999999),
+                "keyboard": json.dumps(get_vk_keyboard(), ensure_ascii=False),
+                "v": "5.199"
+            }
+        )
 
 async def send_telegram_message(text):
     async with ClientSession() as session:
@@ -98,12 +153,15 @@ async def handle(request):
             return web.Response(text="ok")
 
         if text_from_vk == "📋 Прайс лист":
-            await send_vk_message(
-                user_id,
-                "📋 Прайс лист пока доступен в Telegram-боте.\n\n"
-                "Напишите заказ здесь одним сообщением, если уже знаете что нужно."
-            )
-            return web.Response(text="ok")
+    base_dir = os.path.abspath(os.path.join(os.getcwd(), "bot", "images"))
+
+    await send_vk_photo(user_id, os.path.join(base_dir, "price1.png"))
+    await send_vk_photo(user_id, os.path.join(base_dir, "price2.png"))
+    await send_vk_photo(user_id, os.path.join(base_dir, "price3.png"))
+
+    await send_vk_message(user_id, "Для заказа нажмите «🛒 Сделать заказ».")
+
+    return web.Response(text="ok")
 
         if text_from_vk == "🛒 Сделать заказ":
             await send_vk_message(user_id, ORDER_TEXT)
