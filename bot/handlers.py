@@ -300,67 +300,32 @@ async def popular_handler(message: Message):
 @router.message()
 async def receive_order(message: Message):
     if not message.text:
-        await message.answer("Пожалуйста, отправьте заказ текстовым сообщением.")
-        return
-
-    if message.text in [
-        "📋 Прайс лист",
-        "🛒 Сделать заказ",
-        "🚚 Информация по доставке",
-        "☎️ Связаться с менеджером",
-        "🥛 Каталог",
-        "🥛 Молочная продукция",
-        "🥟 Полуфабрикаты",
-        "🥫 Домашняя консервация",
-        "⭐ Отзывы",
-        "⬅ Назад"
-    ]:
-        return
-
-    original_text = message.text
-    text_lower = original_text.strip().lower()
-
-    if len(text_lower) < 10 or text_lower in ["привет", "здравствуйте", "ок", "спасибо"]:
         await message.answer(
-            "Пожалуйста, нажмите «🛒 Сделать заказ» и отправьте заказ одним сообщением.",
+            "Пожалуйста, отправьте заказ текстом.",
             reply_markup=main_keyboard
         )
         return
 
-    ai_keywords = [
-        "что",
-        "посоветуй",
-        "есть",
-        "какие",
-        "сколько",
-        "подойдет",
-        "подойдёт",
-        "детям",
-        "ужин",
-        "завтрак"
-    ]
+    if message.text in [
+        "📋 Прайс лист",
+        "🥛 Каталог",
+        "⭐ Отзывы",
+        "🔥 Акции недели",
+        "🏆 Чаще всего покупают",
+        "🛒 Сделать заказ",
+        "🚚 Информация по доставке",
+        "☎️ Связаться с менеджером",
+        "🥛 Молочная продукция",
+        "🥟 Полуфабрикаты",
+        "🥫 Домашняя консервация",
+        "⬅ Назад"
+    ]:
+        return
 
-        if any(word in text_lower for word in ai_keywords):
-        try:
-            answer = await ask_ai(original_text)
+    text = message.text.strip()
+    text_lower = text.lower()
 
-            await message.answer(
-                answer,
-                reply_markup=main_keyboard
-            )
-
-        except Exception as e:
-            await message.answer(
-                "Сейчас не удалось получить ответ от ИИ-помощника.\n"
-                "Попробуйте ещё раз позже или свяжитесь с менеджером.",
-                reply_markup=main_keyboard
-            )
-
-            await message.bot.send_message(
-                ADMIN_ID,
-                f"❌ Ошибка ИИ:\n{e}"
-            )
-
+    if len(text_lower) < 3:
         return
 
     username = message.from_user.username
@@ -368,26 +333,28 @@ async def receive_order(message: Message):
 
     save_order(
         source="Telegram",
-        order_text=original_text,
+        order_text=text,
         client_username=username_text,
-        client_id=message.from_user.id,
+        client_id=str(message.from_user.id),
         client_name=message.from_user.full_name
     )
 
-    order_text = (
+    admin_text = (
         "🆕 Новый заказ:\n\n"
-        f"{original_text}\n\n"
+        f"{text}\n\n"
         f"Telegram клиента: {username_text}\n"
         f"Telegram ID: {message.from_user.id}\n"
-        f"Имя в Telegram: {message.from_user.full_name}"
+        f"Имя: {message.from_user.full_name}"
     )
 
-    await message.bot.send_message(ADMIN_ID, order_text)
+    await message.bot.send_message(
+        ADMIN_ID,
+        admin_text
+    )
 
     await message.answer(
         "✅ Заказ принят!\n\n"
-        "Мы получили вашу заявку.\n"
-        "Свяжемся с вами в ближайшее время.\n\n"
-        "Спасибо 🙌",
+        "Мы получили заявку.\n"
+        "Свяжемся с вами в ближайшее время.",
         reply_markup=main_keyboard
     )
